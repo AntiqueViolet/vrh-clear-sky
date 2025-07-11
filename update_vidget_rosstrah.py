@@ -42,14 +42,14 @@ def update_vidget_rosstrah():
         sys.exit(1)
 
     try:
-        now = datetime.now()
-        date_from = (now - timedelta(days=4)).strftime("%Y-%m-%d")
-        date_to = (now + timedelta(days=1)).strftime("%Y-%m-%d")
-
         with conn.cursor() as cur:
             cur.execute(f"""
-
-            """, (date_from, date_to))
+                SELECT
+                    pau2.email as 'agent',
+                    pau.email as 'manager'
+                FROM public.app_users pau
+                LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
+            """)
             
             db_data = cur.fetchall()
             logger.info(f"Получено {len(db_data)} записей из БД")
