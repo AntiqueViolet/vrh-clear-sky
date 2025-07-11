@@ -29,8 +29,7 @@ def update_vidget_rosstrah():
     }
     
     db_uri = os.getenv("DB_URI")
-    source_table = os.getenv("SOURCE_TABLE", "tomain")
-    target_table = os.getenv("TARGET_TABLE", "Vidget_Rosstrah")
+    target_table = os.getenv("TARGET_TABLE", "Vidget_Rosstrah_AgentManager")
 
     if None in db_params.values() or not db_uri:
         logger.error("Не заданы обязательные параметры подключения!")
@@ -49,18 +48,7 @@ def update_vidget_rosstrah():
 
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT
-                    et.createdAt AS 'Дата',
-                    et.nomer AS 'Номер ДК',
-                    fu.partnerUserId AS 'Партнер'
-                FROM {source_table} et
-                INNER JOIN foreign_user_record fur ON fur.tomain_id = et.id
-                INNER JOIN foreign_user fu ON fu.id = fur.foreignUser_id 
-                WHERE et.registered = 1
-                AND et.isDublicate NOT IN (3, 99)
-                AND et.createdAt >= %s
-                AND et.createdAt < %s
-                ORDER BY et.createdAt
+
             """, (date_from, date_to))
             
             db_data = cur.fetchall()
@@ -75,16 +63,9 @@ def update_vidget_rosstrah():
         engine = create_engine(db_uri)
         df_du = pd.DataFrame(db_data, columns=column_names)
         
-        if not df_du.empty:
-            df_du['Дата'] = pd.to_datetime(df_du['Дата'], errors='coerce')
-
-        yesterday = (datetime.now() - timedelta(days=4)).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        
         with engine.begin() as conn:
-            delete_sql = text(f"DELETE FROM {target_table} WHERE Дата >= :yesterday")
-            conn.execute(delete_sql, {"yesterday": yesterday})
+            delete_sql = text(f"DELETE FROM {target_table}")
+            conn.execute(delete_sql)
             
             if not df_du.empty:
                 df_du.to_sql(
