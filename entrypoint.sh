@@ -1,5 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 printenv > /etc/environment
-cron
+crond -f -d 8
 tail -f /var/log/cron.log

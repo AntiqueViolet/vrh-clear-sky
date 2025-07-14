@@ -5,6 +5,8 @@ WORKDIR /app
 COPY req.txt .
 RUN pip install --no-cache-dir -r req.txt
 
+RUN apk add --no-cache bash
+
 COPY update_vidget_rosstrah.py .
 COPY cronjob /etc/cron.d/update-vidget
 COPY entrypoint.sh /
