@@ -65,6 +65,10 @@ def first_update():
 
         df_du = pd.DataFrame(db_data, columns=column_names)
 
+        if df_du['agent'].isnull().any():
+            logger.warning(f"Найдены NULL значения в поле agent. Удаляем {df_du['agent'].isnull().sum()} записей")
+            df = df_du.dropna(subset=['agent'])
+
         with engine.begin() as conn:
             if not df_du.empty:
                 df_du.to_sql(
@@ -121,7 +125,11 @@ def update_vidget_rosstrah():
             column_names = [desc[0] for desc in cur.description]
 
         df_du = pd.DataFrame(db_data, columns=column_names)
-        
+
+        if df_du['agent'].isnull().any():
+            logger.warning(f"Найдены NULL значения в поле agent. Удаляем {df_du['agent'].isnull().sum()} записей")
+            df = df_du.dropna(subset=['agent'])
+
         with engine.begin() as conn:
             if not df_du.empty:
                 df_du.to_sql(
