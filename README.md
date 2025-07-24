@@ -41,11 +41,11 @@ cd vrh-clear-sky
 pip install -r req.txt
 
 # Задаем переменные окружения
-export MYSQL_USER=user
-export MYSQL_PASSWORD=pass
-export MYSQL_HOST=host
-export MYSQL_PORT=3366
-export MYSQL_DATABASE=db
+export DB_USER=user
+export DB_PASSWORD=pass
+export DB_HOST=host
+export DB_PORT=3366
+export DB_DATABASE=db
 export DB_URI="mysql+pymysql://user:pass@host:3306/target_db"
 export TARGET_TABLE="Vidget_Rosstrah_AgentManager"
 
@@ -74,11 +74,11 @@ services:
     container_name: vrh-clear-sky
     restart: always
     environment:
-      MYSQL_USER: user
-      MYSQL_PASSWORD: pass
-      MYSQL_HOST: host
-      MYSQL_PORT: 3366
-      MYSQL_DATABASE: db
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_HOST: host
+      DB_PORT: 3366
+      DB_DATABASE: db
       DB_URI: mysql+pymysql://user:pass@host:3306/target_db
       TARGET_TABLE: Vidget_Rosstrah_AgentManager
     volumes:
@@ -104,11 +104,11 @@ python /app/update_vidget_rosstrah.py || exit 1
 ## 🔒 Переменные окружения
 | Переменная       | Описание                                  | Обязательна |
 |-------------------|-------------------------------------------|-------------|
-| `MYSQL_USER`      | Пользователь MySQL                       | ✅          |
-| `MYSQL_PASSWORD`  | Пароль                                   | ✅          |
-| `MYSQL_HOST`      | Хост MySQL                               | ✅          |
-| `MYSQL_PORT`      | Порт MySQL (по умолчанию 3366)          | ❌          |
-| `MYSQL_DATABASE`  | База данных                              | ✅          |
+| `DB_USER`      | Пользователь MySQL                       | ✅          |
+| `DB_PASSWORD`  | Пароль                                   | ✅          |
+| `DB_HOST`      | Хост MySQL                               | ✅          |
+| `DB_PORT`      | Порт MySQL (по умолчанию 3366)          | ❌          |
+| `DB_DATABASE`  | База данных                              | ✅          |
 | `DB_URI`          | URI подключения SQLAlchemy              | ✅          |
 | `TARGET_TABLE`    | Таблица для записи данных (default: Vidget_Rosstrah_AgentManager) | ❌ |
 
