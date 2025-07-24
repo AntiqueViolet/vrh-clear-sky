@@ -1,13 +1,11 @@
 import os
-import time
 import sys
 import logging
-from pickle import GLOBAL
 import pymysql
 from pymysql import MySQLError as PyMysqlError
 from datetime import datetime, timedelta
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 
 # Настройка логирования
 logging.basicConfig(
@@ -52,7 +50,7 @@ def first_update():
                     pau2.email as 'manager'
                 FROM public.app_users pau
                 LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
-                INNER JOIN pulic.orders_paid_operations popo ON popo.user_id = pau.id
+                INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
                 WHERE popo.paid_operation_id = 227
             """)
 
@@ -72,7 +70,7 @@ def first_update():
                 df_du.to_sql(
                     name=target_table,
                     con=conn,
-                    if_exists='append',
+                    if_exists='replace',
                     index=False
                 )
         logger.info(f"Данные успешно обновлены в таблице {target_table}")
@@ -108,7 +106,7 @@ def update_vidget_rosstrah():
                     pau2.email as 'manager'
                 FROM public.app_users pau
                 LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
-                INNER JOIN pulic.orders_paid_operations popo ON popo.user_id = pau.id
+                INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
                 WHERE popo.paid_operation_id = 227
                 AND popo.registered_date > %s
             """, yesterday)
@@ -129,7 +127,7 @@ def update_vidget_rosstrah():
                 df_du.to_sql(
                     name=target_table,
                     con=conn,
-                    if_exists='append',
+                    if_exists='replace',
                     index=False
                 )
         logger.info(f"Данные успешно обновлены в таблице {target_table}")
