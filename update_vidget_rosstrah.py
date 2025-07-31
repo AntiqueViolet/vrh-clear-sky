@@ -60,7 +60,7 @@ def first_update():
             pau.email AS agent,
             pau2.email AS manager
         FROM public.app_users pau
-        INNER JOIN public.app_users pau2 ON pau.manager_id = pau2.id
+        LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
         INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
         WHERE popo.paid_operation_id = 227 
         and popo.is_owner = true
@@ -87,7 +87,7 @@ def update_vidget_rosstrah():
             pau.email AS agent,
             pau2.email AS manager
         FROM public.app_users pau
-        INNER JOIN public.app_users pau2 ON pau.manager_id = pau2.id
+        LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
         INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
         WHERE popo.paid_operation_id = 227
         and popo.is_owner = true
