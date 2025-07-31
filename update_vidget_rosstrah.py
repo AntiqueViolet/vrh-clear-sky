@@ -15,20 +15,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-db_params = {
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "host": os.getenv("DB_HOST"),
-    "port": int(os.getenv("DB_PORT", 3366)),
-    "database": os.getenv("DB_DATABASE"),
-    "charset": 'utf8mb4',
-}
-
-db_uri = os.getenv("DB_URI")
-target_table = os.getenv("TARGET_TABLE", "Vidget_Rosstrah_AgentManager")
-
 def first_update():
     logger.info("Начато единоразовое обновление vidget_rosstrah")
+
+    db_params = {
+        "user": os.getenv("DB_USER"),
+        "password": os.getenv("DB_PASSWORD"),
+        "host": os.getenv("DB_HOST"),
+        "port": int(os.getenv("DB_PORT", 3366)),
+        "database": os.getenv("DB_DATABASE"),
+        "charset": 'utf8mb4',
+    }
+
+    db_uri = os.getenv("DB_URI")
+    target_table = os.getenv("TARGET_TABLE", "Vidget_Rosstrah_AgentManager")
 
     if None in db_params.values() or not db_uri:
         logger.error("Не заданы обязательные параметры подключения!")
@@ -87,6 +87,18 @@ def first_update():
 
 def update_vidget_rosstrah():
     logger.info("Начато обновление vidget_rosstrah")
+
+    db_params = {
+        "user": os.getenv("DB_USER"),
+        "password": os.getenv("DB_PASSWORD"),
+        "host": os.getenv("DB_HOST"),
+        "port": int(os.getenv("DB_PORT", 3366)),
+        "database": os.getenv("DB_DATABASE"),
+        "charset": 'utf8mb4',
+    }
+
+    db_uri = os.getenv("DB_URI")
+    target_table = os.getenv("TARGET_TABLE", "Vidget_Rosstrah_AgentManager")
 
     yesterday = datetime.now() - timedelta(days=2)
 
