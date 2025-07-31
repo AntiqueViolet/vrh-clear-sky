@@ -73,6 +73,8 @@ def first_update():
 
     df = pd.DataFrame(data)
     df.dropna(subset=['agent'], inplace=True)
+    unique_agents = df['agent'].nunique()
+    logger.info(f"Получено {unique_agents} уникальных pau.email (agent)")
 
     upload_to_sql(df)
 
@@ -99,6 +101,8 @@ def update_vidget_rosstrah():
 
     df = pd.DataFrame(data)
     df.dropna(subset=['agent'], inplace=True)
+    unique_agents = df['agent'].nunique()
+    logger.info(f"Получено {unique_agents} уникальных pau.email (agent)")
 
     upload_to_sql(df)
 
