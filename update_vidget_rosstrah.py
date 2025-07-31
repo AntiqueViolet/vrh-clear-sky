@@ -6,8 +6,9 @@ from pymysql import MySQLError as PyMysqlError
 from datetime import datetime, timedelta
 import pandas as pd
 from sqlalchemy import create_engine
-#push
-# Настройка логирования
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -27,124 +28,78 @@ db_params = {
 db_uri = os.getenv("DB_URI")
 target_table = os.getenv("TARGET_TABLE", "Vidget_Rosstrah_AgentManager")
 
+def get_pg_connection():
+    return psycopg2.connect(**db_params)
+
+def fetch_data_from_db(query: str, params: tuple = ()):
+    try:
+        with get_pg_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query, params)
+                result = cur.fetchall()
+                logger.info(f"Получено {len(result)} записей из БД")
+                return result
+    except Exception as e:
+        logger.error(f"Ошибка при выполнении запроса: {e}")
+        sys.exit(1)
+
+def upload_to_sql(df: pd.DataFrame):
+    if not db_uri:
+        logger.error("Не задан DB_URI")
+        sys.exit(1)
+
+    engine = create_engine(db_uri)
+    with engine.begin() as conn:
+        df.to_sql(name=target_table, con=conn, if_exists='replace', index=False)
+        logger.info(f"Данные успешно обновлены в таблице {target_table}")
+
 def first_update():
     logger.info("Начато единоразовое обновление vidget_rosstrah")
 
-    if None in db_params.values() or not db_uri:
-        logger.error("Не заданы обязательные параметры подключения!")
-        sys.exit(1)
+    query = """
+        SELECT
+            pau.email AS agent,
+            pau2.email AS manager
+        FROM public.app_users pau
+        LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
+        INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
+        WHERE popo.paid_operation_id = 227
+    """
+    data = fetch_data_from_db(query)
 
-    engine = create_engine(db_uri)
+    if not data:
+        logger.warning("Нет данных для загрузки")
+        return
 
-    try:
-        conn = pymysql.connect(**db_params, cursorclass=pymysql.cursors.DictCursor)
-    except PyMysqlError as e:
-        logger.error(f"Ошибка подключения к базе данных: {e}")
-        sys.exit(1)
+    df = pd.DataFrame(data)
+    df.dropna(subset=['agent'], inplace=True)
 
-    try:
-        with conn.cursor() as cur:
-            cur.execute(f"""
-                SELECT
-                    pau.email as 'agent',
-                    pau2.email as 'manager'
-                FROM public.app_users pau
-                LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
-                INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
-                WHERE popo.paid_operation_id = 227
-            """)
-
-            db_data = cur.fetchall()
-            logger.info(f"Получено {len(db_data)} записей из БД")
-
-            if not db_data:
-                logger.error("Данные не получены из БД")
-                return
-
-            column_names = [desc[0] for desc in cur.description]
-
-        df_du = pd.DataFrame(db_data, columns=column_names)
-
-        if df_du['agent'].isnull().any():
-            logger.warning(f"Найдены NULL значения в поле agent. Удаляем {df_du['agent'].isnull().sum()} записей")
-            df = df_du.dropna(subset=['agent'])
-
-        with engine.begin() as conn:
-            if not df_du.empty:
-                df_du.to_sql(
-                    name=target_table,
-                    con=conn,
-                    if_exists='replace',
-                    index=False
-                )
-        logger.info(f"Данные успешно обновлены в таблице {target_table}")
-
-    except Exception as e:
-        logger.exception(f"Критическая ошибка: {str(e)}")
-        sys.exit(1)
-    finally:
-        conn.close()
+    upload_to_sql(df)
 
 def update_vidget_rosstrah():
     logger.info("Начато обновление vidget_rosstrah")
-
     yesterday = datetime.now() - timedelta(days=2)
 
-    if None in db_params.values() or not db_uri:
-        logger.error("Не заданы обязательные параметры подключения!")
-        sys.exit(1)
+    query = """
+        SELECT
+            pau.email AS agent,
+            pau2.email AS manager
+        FROM public.app_users pau
+        LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
+        INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
+        WHERE popo.paid_operation_id = 227
+        AND popo.registered_date > %s
+    """
+    data = fetch_data_from_db(query, (yesterday,))
 
-    engine = create_engine(db_uri)
+    if not data:
+        logger.warning("Нет новых данных для обновления")
+        return
 
-    try:
-        conn = pymysql.connect(**db_params, cursorclass=pymysql.cursors.DictCursor)
-    except PyMysqlError as e:
-        logger.error(f"Ошибка подключения к базе данных: {e}")
-        sys.exit(1)
+    df = pd.DataFrame(data)
+    df.dropna(subset=['agent'], inplace=True)
 
-    try:
-        with conn.cursor() as cur:
-            cur.execute(f"""
-                SELECT
-                    pau.email as 'agent',
-                    pau2.email as 'manager'
-                FROM public.app_users pau
-                LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
-                INNER JOIN public.orders_paid_operations popo ON popo.user_id = pau.id
-                WHERE popo.paid_operation_id = 227
-                AND popo.registered_date > %s
-            """, yesterday)
-            
-            db_data = cur.fetchall()
-            logger.info(f"Получено {len(db_data)} записей из БД")
-            
-            if not db_data:
-                logger.error("Данные не получены из БД")
-                return
-
-            column_names = [desc[0] for desc in cur.description]
-
-        df_du = pd.DataFrame(db_data, columns=column_names)
-
-        if df_du['agent'].isnull().any():
-            logger.warning(f"Найдены NULL значения в поле agent. Удаляем {df_du['agent'].isnull().sum()} записей")
-            df = df_du.dropna(subset=['agent'])
-
-        with engine.begin() as conn:
-            if not df_du.empty:
-                df_du.to_sql(
-                    name=target_table,
-                    con=conn,
-                    if_exists='replace',
-                    index=False
-                )
-        logger.info(f"Данные успешно обновлены в таблице {target_table}")
-
-    except Exception as e:
-        logger.exception(f"Критическая ошибка: {str(e)}")
-        sys.exit(1)
-    finally:
-        conn.close()
+    upload_to_sql(df)
 
 if __name__ == "__main__":
     update_vidget_rosstrah()
