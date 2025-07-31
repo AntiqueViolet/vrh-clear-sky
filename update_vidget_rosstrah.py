@@ -57,7 +57,7 @@ def first_update():
 
     query = """
         SELECT
-            pau.email AS agent,
+            pau.username AS agent,
             pau2.email AS manager
         FROM public.app_users pau
         LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
@@ -84,7 +84,7 @@ def update_vidget_rosstrah():
 
     query = """
         SELECT
-            pau.email AS agent,
+            pau.username AS agent,
             pau2.email AS manager
         FROM public.app_users pau
         LEFT JOIN public.app_users pau2 ON pau.manager_id = pau2.id
