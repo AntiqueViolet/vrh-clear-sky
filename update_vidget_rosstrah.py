@@ -6,7 +6,7 @@ from pymysql import MySQLError as PyMysqlError
 from datetime import datetime, timedelta
 import pandas as pd
 from sqlalchemy import create_engine
-
+#push
 # Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
