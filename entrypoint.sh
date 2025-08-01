@@ -4,7 +4,7 @@ printenv > /etc/environment
 
 python /app/first_update.py || exit 1
 
-crontab /app/cronjob
+crontab /etc/cron.d/update-vidget
 
 crond -f -d 8
 tail -f /var/log/cron.log
