@@ -49,7 +49,7 @@ def upload_to_sql(df: pd.DataFrame):
 
     engine = create_engine(db_uri)
     with engine.begin() as conn:
-        df.to_sql(name=target_table, con=conn, if_exists='append', index=True)
+        df.to_sql(name=target_table, con=conn, if_exists='append', index=False)
         logger.info(f"Данные успешно обновлены в таблице {target_table}")
 
 def first_update():
