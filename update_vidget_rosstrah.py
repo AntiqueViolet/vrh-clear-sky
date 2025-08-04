@@ -49,7 +49,7 @@ def upload_to_sql(df: pd.DataFrame):
 
     engine = create_engine(db_uri)
     with engine.begin() as conn:
-        df.to_sql(name=target_table, con=conn, if_exists='replace', index=False)
+        df.to_sql(name=target_table, con=conn, if_exists='append', index=True)
         logger.info(f"Данные успешно обновлены в таблице {target_table}")
 
 def first_update():
@@ -74,7 +74,7 @@ def first_update():
     df = pd.DataFrame(data)
     df.dropna(subset=['agent'], inplace=True)
     unique_agents = df['agent'].nunique()
-    logger.info(f"Получено {unique_agents} уникальных pau.email (agent)")
+    logger.info(f"Получено {unique_agents} уникальных pau.username (agent)")
 
     upload_to_sql(df)
 
@@ -102,7 +102,7 @@ def update_vidget_rosstrah():
     df = pd.DataFrame(data)
     df.dropna(subset=['agent'], inplace=True)
     unique_agents = df['agent'].nunique()
-    logger.info(f"Получено {unique_agents} уникальных pau.email (agent)")
+    logger.info(f"Получено {unique_agents} уникальных pau.username (agent)")
 
     upload_to_sql(df)
 
